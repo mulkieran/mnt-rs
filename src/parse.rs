@@ -72,6 +72,25 @@ impl FromStr for MntOps {
     }
 }
 
+#[derive(Debug)]
+pub enum Search {
+    Spec(String),
+    File(PathBuf),
+}
+
+pub fn get_mount_search_from<U, I>(search: &Search, iter: MountIter<U>)
+    ->  Result<Vec<MountEntry>, ParseError> where
+                U: BufRead {
+    match *search { 
+        Search::Spec(ref spec) => { 
+            iter.filter(|x| match *x { Ok(ref v) => &v.spec == spec, Err(_) => true }).collect()
+        }
+        Search::File(ref path) => { 
+            iter.filter(|x| match *x { Ok(ref v) => &v.file == path, Err(_) => true}).collect()
+        }
+    }
+}
+
 #[derive(Clone, PartialEq, Eq)]
 pub struct MountEntry {
     pub spec: String,
